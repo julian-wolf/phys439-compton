@@ -35,7 +35,7 @@ f215 = fit(lims35.', zeroing_spectra_normalized(8, lims35).', 'gauss1');
 f_left  = polyfit([130 135 140].', [f130.b1 f135.b1 f140.b1].', 1);
 f_right = polyfit([215 220 225 230].', [f215.b1 f220.b1 f225.b1 f230.b1].', 1);
 
-intercept = (f_right(2)-f_left(2))/(f_left(1)-f_right(1))
+intercept = (f_right(2)-f_left(2))/(f_left(1)-f_right(1));
 
 fh_intercept = figure;
 hold on
@@ -43,6 +43,7 @@ plot([120 240], f_left(1)  * [120 240] + f_left(2));
 plot([120 240], f_right(1) * [120 240] + f_right(2));
 plot([130 135 140 145], [f130.b1 f135.b1 f140.b1 f145.b1], 'o');
 plot([215 220 225 230], [f215.b1 f220.b1 f225.b1 f230.b1], 'o');
+ylim([200 800]);
 hold off
 
 end
