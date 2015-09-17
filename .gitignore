@@ -1,3 +1,9 @@
 *~
-*.pdf
-*.fig
+preliminary\ report
+
+cleanfigure.m
+figure2dot.m
+m2tInputParser.m
+matlab2tikz.m
+private/*
+

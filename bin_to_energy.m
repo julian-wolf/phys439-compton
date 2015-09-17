@@ -1,4 +1,4 @@
-function [energy] = bin_to_energy(bin, fit_to_data)
+function [energy] = bin_to_energy (bin, fit_to_data)
 if nargin == 1
     fit_to_data = find_calib_coeff(false);
 end

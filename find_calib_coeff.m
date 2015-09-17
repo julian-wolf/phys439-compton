@@ -1,4 +1,4 @@
-function [fit_to_data energies bins bin_errors] = find_calib_coeff(draw_fit)
+function [fit_to_data energies bins bin_errors] = find_calib_coeff (draw_fit)
 if nargin < 1
     draw_fit = false;
 end
