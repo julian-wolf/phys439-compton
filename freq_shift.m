@@ -1,12 +1,15 @@
-function [fit_to_data conf_int] = freq_shift (draw_figure)
-if nargin ~= 1
-    draw_figure = true;
+function [fit_to_data conf_int] = freq_shift (draw_final, draw_intermediate)
+if nargin < 2
+    draw_intermediate = false;
+    if nargin < 1
+        draw_final = true;
+    end
 end
 
 angles      = [210 215 220 225 230 235 240 245];
 angles_true = abs(angles - 180) * pi / 180;
 
-calib_coeffs = find_calib_coeff();
+calib_coeffs = find_calib_coeff(false);
 
 spectrum_shift_210deg = get_spectrum('data/freq_shift_210deg.chn');
 spectrum_shift_215deg = get_spectrum('data/freq_shift_215deg.chn');
@@ -44,7 +47,8 @@ spectra_shift_bg = [spectrum_shift_210deg_bg ...
                     spectrum_shift_240deg_bg ...
                     spectrum_shift_245deg_bg];
                 
-spectra_shift_fg_data = double([spectra_shift.data] - [spectra_shift_bg.data]);
+spectra_shift_fg_data = double([spectra_shift.data] - ...
+                               [spectra_shift_bg.data]);
 
 section_starts = [460 440 420 400 380 360 340 320];
 
@@ -52,17 +56,20 @@ energies    = zeros(size(angles));
 frac_errors = zeros(size(angles));
 
 for i = 1:numel(angles)
-    % figure;
-    % plot(1:1024, spectra_shift_fg_data(:, i));
-    % hold on
-    
     f = fit([section_starts(i):1024].', ...
             spectra_shift_fg_data(section_starts(i):1024, i), ...
             'gauss1');
-    % plot(f);
+    
+    if draw_intermediate
+        figure;
+        hold on
+        
+        plot(1:1024, spectra_shift_fg_data(:, i));
+        plot(f);
+    end
     
     
-    confidences = confint(f);
+    confidences       = confint(f);
     energy_confidence = (confidences(2, 2) - confidences(1, 2)) / 2;
     
     energies(i)    = bin_to_energy(f.b1, calib_coeffs);
@@ -71,9 +78,9 @@ for i = 1:numel(angles)
 end
 
 fit_to_data = fit((1 - cos(angles_true)).', (1000 ./ (energies)).', 'poly1');
-conf_int = confint(fit_to_data);
+conf_int    = confint(fit_to_data);
 
-if draw_figure
+if draw_final
     figure;
     hold on
 

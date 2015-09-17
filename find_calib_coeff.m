@@ -1,4 +1,8 @@
-function [fit_to_data energies bins bin_errors] = find_calib_coeff
+function [fit_to_data energies bins bin_errors] = find_calib_coeff(draw_fit)
+if nargin < 1
+    draw_fit = false;
+end
+
 spectrum_133Ba_calib = get_spectrum('data/Ba133calib.chn');
 spectrum_137Cs_calib = get_spectrum('data/Cs137calib.chn');
 spectrum_22Na_calib  = get_spectrum('data/Na22calib.chn');
@@ -7,9 +11,7 @@ calib_spectra = [spectrum_133Ba_calib ... %
                  spectrum_133Ba_calib ... % two Ba peaks
                  spectrum_137Cs_calib ...
                  spectrum_22Na_calib];
-             
-% sources = ['133Ba'; '137Cs'; '22Na '];
-             
+
 calib_spectra_normalized = zeros(4, 1024);
 for i = 1:4
     calib_spectra_normalized(i, :) = normalize_spectrum(calib_spectra(i));
@@ -31,12 +33,14 @@ for i = 1:4
     bin_errors(i) = (confidences(2, 2) - confidences(1, 2)) / 2;
 end
 
-% figure;
-% plot(bins, energies, 'o'); % error bars can't be seen either way
-% hold on
-
 fit_to_data = polyfit(bins, energies, 1);
 
-% plot([0 700], fit_to_data(1) * [0 700] + fit_to_data(2));
+if draw_fit
+    figure;
+    hold on
+    
+    plot(bins, energies, 'o'); % error bars can't be seen either way
+    plot([0 700], fit_to_data(1) * [0 700] + fit_to_data(2));
+end
 
 end
