@@ -32,7 +32,7 @@ lims35 = 460:600;
 f145 = fit(lims35.', zeroing_spectra_normalized(7, lims35).', 'gauss1');
 f215 = fit(lims35.', zeroing_spectra_normalized(8, lims35).', 'gauss1');
 
-f_left  = polyfit([130 135 140].', [f130.b1 f135.b1 f140.b1].', 1);
+f_left  = polyfit([130 135 140 145].', [f130.b1 f135.b1 f140.b1 f145.b1].', 1);
 f_right = polyfit([215 220 225 230].', [f215.b1 f220.b1 f225.b1 f230.b1].', 1);
 
 intercept = (f_right(2)-f_left(2))/(f_left(1)-f_right(1));
