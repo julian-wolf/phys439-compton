@@ -3,5 +3,6 @@ if nargin == 1
     fit_to_data = find_calib_coeff(false);
 end
 
-energy = fit_to_data(1) * bin + fit_to_data(2);
+energy = fit_to_data.p1 * bin + fit_to_data.p2;
+
 end

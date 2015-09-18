@@ -1,4 +1,8 @@
-function [intercept fh_intercept] = find_zero_deg
+function [intercept intercept_bounds] = find_zero_deg (draw_fit)
+if nargin < 1
+    draw_fit = false;
+end
+
 spectrum_zeroing_130deg = get_spectrum('data/Main_zeroing_130deg.chn');
 spectrum_zeroing_135deg = get_spectrum('data/Main_zeroing_135deg.chn');
 spectrum_zeroing_140deg = get_spectrum('data/Main_zeroing_140deg.chn');
@@ -32,18 +36,47 @@ lims35 = 460:600;
 f145 = fit(lims35.', zeroing_spectra_normalized(7, lims35).', 'gauss1');
 f215 = fit(lims35.', zeroing_spectra_normalized(8, lims35).', 'gauss1');
 
-f_left  = polyfit([130 135 140 145].', [f130.b1 f135.b1 f140.b1 f145.b1].', 1);
-f_right = polyfit([215 220 225 230].', [f215.b1 f220.b1 f225.b1 f230.b1].', 1);
+f_left  = fit([130 135 140 145].', ...
+              [f130.b1 f135.b1 f140.b1 f145.b1].', 'poly1')
+f_right = fit([215 220 225 230].', ...
+              [f215.b1 f220.b1 f225.b1 f230.b1].', 'poly1')
 
-intercept = (f_right(2)-f_left(2))/(f_left(1)-f_right(1));
+conf_left  = confint(f_left)
+conf_right = confint(f_right)
 
-fh_intercept = figure;
-hold on
-plot([120 240], f_left(1)  * [120 240] + f_left(2));
-plot([120 240], f_right(1) * [120 240] + f_right(2));
-plot([130 135 140 145], [f130.b1 f135.b1 f140.b1 f145.b1], 'o');
-plot([215 220 225 230], [f215.b1 f220.b1 f225.b1 f230.b1], 'o');
-ylim([200 800]);
-hold off
+intercept = (f_right.p2 - f_left.p2) / (f_left.p1 - f_right.p1)
+
+intercept_left  = (conf_right(1, 2) - conf_left(2, 2)) / ...
+                  (conf_left(2, 1) - conf_right(1, 1))
+intercept_right = (conf_right(2, 2) - conf_left(1, 2)) / ...
+                  (conf_left(1, 1) - conf_right(2, 1))
+
+intercept_bounds = [intercept_left intercept_right];
+
+if draw_fit
+    figure;
+    hold on
+    
+%     fill([121 239 239 121], ...
+%          [conf_left(1, 1) * 121 + conf_left(1, 2), ...
+%           conf_left(1, 1) * 239 + conf_left(1, 2), ...
+%           conf_left(2, 1) * 239 + conf_left(2, 2), ...
+%           conf_left(2, 1) * 121 + conf_left(2, 2)], ...
+%          'c', 'edgecolor', 'w');
+%     fill([121 239 239 121], ...
+%          [conf_right(1, 1) * 121 + conf_right(1, 2), ...
+%           conf_right(1, 1) * 239 + conf_right(1, 2), ...
+%           conf_right(2, 1) * 239 + conf_right(2, 2), ...
+%           conf_right(2, 1) * 121 + conf_right(2, 2)], ...
+%          'c', 'edgecolor', 'w');
+
+    plot([120 240], f_left.p1  * [120 240] + f_left.p2);
+    plot([120 240], f_right.p1 * [120 240] + f_right.p2);
+    
+    plot([130 135 140 145], [f130.b1 f135.b1 f140.b1 f145.b1], 'ok');
+    plot([215 220 225 230], [f215.b1 f220.b1 f225.b1 f230.b1], 'ok');
+    
+    ylim([200 800]);
+end
 
 end
