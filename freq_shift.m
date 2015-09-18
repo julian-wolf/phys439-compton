@@ -4,7 +4,7 @@ function [fit_to_data conf_int] = freq_shift ...
 if nargin < 3
     draw_intermediate = false;
     if nargin < 2
-        draw_final = true;
+        draw_final = false;
         if nargin < 1
             material = ''; % default to Al, which has no label!
         end
