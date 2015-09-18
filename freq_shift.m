@@ -1,56 +1,68 @@
-function [fit_to_data conf_int] = freq_shift (draw_final, draw_intermediate)
-if nargin < 2
+function [fit_to_data conf_int] = freq_shift ...
+    (material, draw_final, draw_intermediate)
+% material can be 'BR' for brass or 'Cu' for copper
+if nargin < 3
     draw_intermediate = false;
-    if nargin < 1
+    if nargin < 2
         draw_final = true;
+        if nargin < 1
+            material = ''; % default to Al, which has no label!
+        end
     end
 end
+if nargin >= 1
+    material = [material '_'];
+end
 
-angles      = [210 215 220 225 230 235 240 245];
+% angles      = 210:5:245;
+angles      = 220:5:240;
 angles_true = abs(angles - 180) * pi / 180;
 
 calib_coeffs = find_calib_coeff(false);
 
-spectrum_shift_210deg = get_spectrum('data/freq_shift_210deg.chn');
-spectrum_shift_215deg = get_spectrum('data/freq_shift_215deg.chn');
-spectrum_shift_220deg = get_spectrum('data/freq_shift_220deg.chn');
-spectrum_shift_225deg = get_spectrum('data/freq_shift_225deg.chn');
-spectrum_shift_230deg = get_spectrum('data/freq_shift_230deg.chn');
-spectrum_shift_235deg = get_spectrum('data/freq_shift_235deg.chn');
-spectrum_shift_240deg = get_spectrum('data/freq_shift_240deg.chn');
-spectrum_shift_245deg = get_spectrum('data/freq_shift_245deg.chn');
+data_path = ['data/freq_shift_' material];
 
-spectrum_shift_210deg_bg = get_spectrum('data/freq_shift_210deg_bg.chn');
-spectrum_shift_215deg_bg = get_spectrum('data/freq_shift_215deg_bg.chn');
-spectrum_shift_220deg_bg = get_spectrum('data/freq_shift_220deg_bg.chn');
-spectrum_shift_225deg_bg = get_spectrum('data/freq_shift_225deg_bg.chn');
-spectrum_shift_230deg_bg = get_spectrum('data/freq_shift_230deg_bg.chn');
-spectrum_shift_235deg_bg = get_spectrum('data/freq_shift_235deg_bg.chn');
-spectrum_shift_240deg_bg = get_spectrum('data/freq_shift_240deg_bg.chn');
-spectrum_shift_245deg_bg = get_spectrum('data/freq_shift_245deg_bg.chn');
+% spectrum_shift_210deg = get_spectrum([data_path '210deg.chn']);
+% spectrum_shift_215deg = get_spectrum([data_path '215deg.chn']);
+spectrum_shift_220deg = get_spectrum([data_path '220deg.chn']);
+spectrum_shift_225deg = get_spectrum([data_path '225deg.chn']);
+spectrum_shift_230deg = get_spectrum([data_path '230deg.chn']);
+spectrum_shift_235deg = get_spectrum([data_path '235deg.chn']);
+spectrum_shift_240deg = get_spectrum([data_path '240deg.chn']);
+% spectrum_shift_245deg = get_spectrum([data_path '245deg.chn']);
 
-spectra_shift = [spectrum_shift_210deg ...
-                 spectrum_shift_215deg ...
+% spectrum_shift_210deg_bg = get_spectrum([data_path '210deg_bg.chn']);
+% spectrum_shift_215deg_bg = get_spectrum([data_path '215deg_bg.chn']);
+spectrum_shift_220deg_bg = get_spectrum([data_path '220deg_bg.chn']);
+spectrum_shift_225deg_bg = get_spectrum([data_path '225deg_bg.chn']);
+spectrum_shift_230deg_bg = get_spectrum([data_path '230deg_bg.chn']);
+spectrum_shift_235deg_bg = get_spectrum([data_path '235deg_bg.chn']);
+spectrum_shift_240deg_bg = get_spectrum([data_path '240deg_bg.chn']);
+% spectrum_shift_245deg_bg = get_spectrum([data_path '245deg_bg.chn']);
+
+spectra_shift = [... spectrum_shift_210deg ...
+                 ... spectrum_shift_215deg ...
                  spectrum_shift_220deg ...
                  spectrum_shift_225deg ...
                  spectrum_shift_230deg ...
                  spectrum_shift_235deg ...
-                 spectrum_shift_240deg ...
-                 spectrum_shift_245deg];
+                 spectrum_shift_240deg]; ...
+                 % spectrum_shift_245deg];
              
-spectra_shift_bg = [spectrum_shift_210deg_bg ...
-                    spectrum_shift_215deg_bg ...
+spectra_shift_bg = [... spectrum_shift_210deg_bg ...
+                    ... spectrum_shift_215deg_bg ...
                     spectrum_shift_220deg_bg ...
                     spectrum_shift_225deg_bg ...
                     spectrum_shift_230deg_bg ...
                     spectrum_shift_235deg_bg ...
-                    spectrum_shift_240deg_bg ...
-                    spectrum_shift_245deg_bg];
+                    spectrum_shift_240deg_bg]; ...
+                    % spectrum_shift_245deg_bg];
                 
 spectra_shift_fg_data = double([spectra_shift.data] - ...
                                [spectra_shift_bg.data]);
 
-section_starts = [460 440 420 400 380 360 340 320];
+% section_starts = [460 440 420 400 380 360 340 320];
+section_starts = [420 400 380 360 340];
 
 energies    = zeros(size(angles));
 frac_errors = zeros(size(angles));
