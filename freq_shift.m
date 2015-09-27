@@ -1,4 +1,4 @@
-function [fit_to_data conf_int] = freq_shift ...
+function [fit_to_data] = freq_shift ...
     (material, draw_final, draw_intermediate)
 % material can be 'BR' for brass or 'Cu' for copper
 if nargin < 3
@@ -91,27 +91,34 @@ for i = 1:numel(angles)
                      energies(i);
 end
 
-fit_to_data = fit((1 - cos(angles_true)).', (1000 ./ (energies)).', 'poly1');
-conf_int    = confint(fit_to_data);
+fit_to_data = fitlm((1 - cos(angles_true)).', (1000 ./ (energies)).');
 
 if draw_final
     figure;
     hold on
 
-    fill([0.001 0.699 0.699 0.001], ...
-         [conf_int(1, 1) * 0.001 + conf_int(1, 2), ...
-          conf_int(1, 1) * 0.699 + conf_int(1, 2), ...
-          conf_int(2, 1) * 0.699 + conf_int(2, 2), ...
-          conf_int(2, 1) * 0.001 + conf_int(2, 2)], ...
-         'c', 'edgecolor', 'w');
-    plot([0.0 0.7], fit_to_data.p1 * [0.0 0.7] + fit_to_data.p2);
+    sp_data = subplot('Position', [0.1 0.3 0.8 0.6]);
     errorbar((1 - cos(angles_true)), 1000 ./ energies, ...
              frac_errors .* (1000 ./ energies), '.k');
-
+    ax = gca;
+    set(ax, 'TickLabelInterpreter', 'LaTeX');
+    set(ax, 'xtick', []);
+    ylim([1.8 3.0]);
+    ax.YTick = ax.YTick(2:end);
     ylabel('inverse energy (MeV$^{-1}$)', 'Interpreter', 'LaTeX');
-    xlabel('$1 - \cos \theta$',           'Interpreter', 'LaTeX');
-
-    set(gca, 'TickLabelInterpreter', 'LaTeX');
+    title('');
+    
+    sp_resid = subplot('Position', [0.1 0.1 0.8 0.2]);
+    plot((1 - cos(angles_true)), fit_to_data.Residuals.Raw, 'o');
+    % plot([0.1 0.7], [0 0], '--r');
+    ax = gca;
+    set(ax, 'TickLabelInterpreter', 'LaTeX');
+    ax.YTick = ax.YTick(2:end-1);
+    ylabel('raw residuals', 'Interpreter', 'LaTeX');
+    xlabel('$1 - \cos \theta$', 'Interpreter', 'LaTeX');
+    title('');
+    
+    linkaxes([sp_data sp_resid].', 'x');
 end
 
 end
