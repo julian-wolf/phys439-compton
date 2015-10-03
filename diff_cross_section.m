@@ -1,4 +1,4 @@
-function [fit_Thomson fit_KN] = diff_cross_section (draw_figure, material)
+function [] = diff_cross_section (draw_figure, material)
 % material can be 'BR' for brass or 'Cu' for copper
 if nargin < 2
     material = ''; % default to Al, which has no label!
@@ -99,72 +99,50 @@ end
 
 alpha0 = 1.2947; % 661.6 keV / ((511 keV / c^2) * c^2)
 
-dOmega = 1; N = 1; I0 = 1; % TODO: use true values!
+dOmega = 0.5; N = 1; I0 = 1; % TODO: use true values!
 
 recorded_cross_sections = hit_counts / (dOmega * N * I0);
 
-Thomson_cross_sections = 1 + (cos(angles_true)).^2;
-KN_cross_sections = (1 + (cos(angles_true)).^2) ./ ...
-                    ((1 + alpha0 .* (1 - cos(angles_true))).^2) .* ...
-                    (   1 + ...
-                        (alpha0^2 .* (1 - cos(angles_true)).^2) ./ ...
-                        (   (1 + (cos(angles_true)).^2) .* ...
-                            (1 + alpha0 .* (1 - cos(angles_true))) ...
-                        ) ...
-                    );
-
-fit_Thomson = fitlm(Thomson_cross_sections.', recorded_cross_sections.');
-fit_KN      = fitlm(KN_cross_sections.',      recorded_cross_sections.');
+Thomson_cross_section = @(angles) 1 + (cos(angles)).^2;
+KN_cross_section      = @(angles) ...
+                         (1 + (cos(angles)).^2) ./ ...
+                         ((1 + alpha0 .* (1 - cos(angles))).^2) .* ...
+                         (   1 + ...
+                            (alpha0^2 .* (1 - cos(angles)).^2) ./ ...
+                            (   (1 + (cos(angles)).^2) .* ...
+                                (1 + alpha0 .* (1 - cos(angles))) ...
+                            ) ...
+                         );
 
 if draw_figure
-    % Thomson figure
+    all_angles = 0.0:0.01:1.5;
+    
     figure;
     hold on
     
     sp_data = subplot('Position', [0.1 0.3 0.8 0.6]);
-    plot(fit_Thomson);
+    plot(all_angles, KN_cross_section(all_angles), '-');
+    hold on
+    plot(all_angles, Thomson_cross_section(all_angles), '--');
+    plot(angles_true, recorded_cross_sections, 'o');
     ax = gca;
     set(ax, 'TickLabelInterpreter', 'LaTeX');
     set(ax, 'xtick', []);
-    % ylim([1.8 3.0]);
     ax.YTick = ax.YTick(2:end);
     ylabel('recorded cross section', 'Interpreter', 'LaTeX');
     title('');
     
     sp_resid = subplot('Position', [0.1 0.1 0.8 0.2]);
-    plot(Thomson_cross_sections, fit_Thomson.Residuals.Raw, 'o');
-    % plot([0.1 0.7], [0 0], '--r');
-    ax = gca;
-    set(ax, 'TickLabelInterpreter', 'LaTeX');
-    ax.YTick = ax.YTick(2:end-1);
-    ylabel('raw residuals', 'Interpreter', 'LaTeX');
-    xlabel('Thomson cross section', 'Interpreter', 'LaTeX');
-    title('');
-    
-    linkaxes([sp_data sp_resid].', 'x');
-    
-    % K-N figure
-    figure;
+    plot(angles_true, ...
+         KN_cross_section(angles_true) - recorded_cross_sections, ...
+         'o');
     hold on
-    
-    sp_data = subplot('Position', [0.1 0.3 0.8 0.6]);
-    plot(fit_KN);
-    ax = gca;
-    set(ax, 'TickLabelInterpreter', 'LaTeX');
-    set(ax, 'xtick', []);
-    % ylim([1.8 3.0]);
-    ax.YTick = ax.YTick(2:end);
-    ylabel('recorded cross section', 'Interpreter', 'LaTeX');
-    title('');
-    
-    sp_resid = subplot('Position', [0.1 0.1 0.8 0.2]);
-    plot(KN_cross_sections, fit_KN.Residuals.Raw, 'o');
-    % plot([0.1 0.7], [0 0], '--r');
+    plot([0.0 1.5], [0 0], '--r');
     ax = gca;
     set(ax, 'TickLabelInterpreter', 'LaTeX');
     ax.YTick = ax.YTick(2:end-1);
     ylabel('raw residuals', 'Interpreter', 'LaTeX');
-    xlabel('Klein-Nishina cross section', 'Interpreter', 'LaTeX');
+    xlabel('$\theta$ (rad)', 'Interpreter', 'LaTeX');
     title('');
     
     linkaxes([sp_data sp_resid].', 'x');
