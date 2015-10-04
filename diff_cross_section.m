@@ -1,12 +1,8 @@
-function [] = diff_cross_section (draw_figure, material)
+function [] = diff_cross_section (material)
 % material can be 'BR' for brass or 'Cu' for copper
-if nargin < 2
+if nargin < 1
     material = ''; % default to Al, which has no label!
-    if nargin < 1
-        draw_figure = true;
-    end
-end
-if nargin >= 2
+else
     material = [material '_'];
 end
 
@@ -98,12 +94,12 @@ for i = 1:numel(angles)
 end
 
 alpha0 = 1.2947; % 661.6 keV / ((511 keV / c^2) * c^2)
-
 dOmega = 0.165;
-N = 1.01e20;
-I0 = flux_density(false);
+N      = 0.0001; % 1.01e20;
+I0     = flux_density(false);
+r0     = 0.2; % just a guess, really
 
-recorded_cross_sections = hit_counts / (dOmega * N * I0);
+recorded_cross_sections = hit_counts / (dOmega * N * I0) / (r0^2 / 2);
 
 Thomson_cross_section = @(angles) 1 + (cos(angles)).^2;
 KN_cross_section      = @(angles) ...
@@ -116,38 +112,36 @@ KN_cross_section      = @(angles) ...
                             ) ...
                          );
 
-if draw_figure
-    all_angles = 0.0:0.01:1.5;
-    
-    figure;
-    hold on
-    
-    sp_data = subplot('Position', [0.1 0.3 0.8 0.6]);
-    plot(all_angles, KN_cross_section(all_angles), '-');
-    hold on
-    plot(all_angles, Thomson_cross_section(all_angles), '--');
-    plot(angles_true, recorded_cross_sections, 'o');
-    ax = gca;
-    set(ax, 'TickLabelInterpreter', 'LaTeX');
-    set(ax, 'xtick', []);
-    ax.YTick = ax.YTick(2:end);
-    ylabel('recorded cross section', 'Interpreter', 'LaTeX');
-    title('');
-    
-    sp_resid = subplot('Position', [0.1 0.1 0.8 0.2]);
-    plot(angles_true, ...
-         KN_cross_section(angles_true) - recorded_cross_sections, ...
-         'o');
-    hold on
-    plot([0.0 1.5], [0 0], '--r');
-    ax = gca;
-    set(ax, 'TickLabelInterpreter', 'LaTeX');
-    ax.YTick = ax.YTick(2:end-1);
-    ylabel('raw residuals', 'Interpreter', 'LaTeX');
-    xlabel('$\theta$ (rad)', 'Interpreter', 'LaTeX');
-    title('');
-    
-    linkaxes([sp_data sp_resid].', 'x');
-end
+all_angles = 0.0:0.01:1.5;
+
+figure;
+hold on
+
+sp_data = subplot('Position', [0.1 0.3 0.8 0.6]);
+plot(all_angles, KN_cross_section(all_angles), '-');
+hold on
+plot(all_angles, Thomson_cross_section(all_angles), '--');
+plot(angles_true, recorded_cross_sections, 'o');
+ax = gca;
+set(ax, 'TickLabelInterpreter', 'LaTeX');
+set(ax, 'xtick', []);
+ax.YTick = ax.YTick(2:end);
+ylabel('recorded cross section', 'Interpreter', 'LaTeX');
+title('');
+
+sp_resid = subplot('Position', [0.1 0.1 0.8 0.2]);
+plot(angles_true, ...
+     KN_cross_section(angles_true) - recorded_cross_sections, ...
+     'o');
+hold on
+plot([0.0 1.5], [0 0], '--r');
+ax = gca;
+set(ax, 'TickLabelInterpreter', 'LaTeX');
+ax.YTick = ax.YTick(2:end-1);
+ylabel('raw residuals', 'Interpreter', 'LaTeX');
+xlabel('$\theta$ (rad)', 'Interpreter', 'LaTeX');
+title('');
+
+linkaxes([sp_data sp_resid].', 'x');
                 
 end

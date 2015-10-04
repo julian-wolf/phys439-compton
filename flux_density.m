@@ -40,7 +40,10 @@ for i = 1:5
 end
 
 flux_fit = fit(thicknesses.', hit_counts.', 'exp1');
-density  = flux_fit(0);
+
+detector_area = 0.0254^2; % as measured in the lab
+
+density  = flux_fit(0) / detector_area;
 
 if draw_figure
     figure;
