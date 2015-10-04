@@ -99,7 +99,9 @@ end
 
 alpha0 = 1.2947; % 661.6 keV / ((511 keV / c^2) * c^2)
 
-dOmega = 0.5; N = 1; I0 = 1; % TODO: use true values!
+dOmega = 0.165;
+N = 1.01e20;
+I0 = flux_density(false);
 
 recorded_cross_sections = hit_counts / (dOmega * N * I0);
 

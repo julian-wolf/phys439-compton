@@ -37,9 +37,6 @@ for i = 1:5
     corrected_data = relevant_data ./ ...
                      detector_efficiency(calib_coeffs(relevant_data));
     hit_counts(i)  = sum(corrected_data);
-    
-    figure;
-    plot(relevant_data, corrected_data, 'o');
 end
 
 flux_fit = fit(thicknesses.', hit_counts.', 'exp1');
