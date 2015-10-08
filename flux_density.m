@@ -36,14 +36,16 @@ for i = 1:5
     relevant_data  = double(spectra_bricks(fwhm_range, i));
     corrected_data = relevant_data ./ ...
                      detector_efficiency(calib_coeffs(relevant_data));
-    hit_counts(i)  = sum(corrected_data);
+                 
+    hit_counts(i) = sum(corrected_data);
+    hit_counts(i) = sum(relevant_data);
 end
 
-flux_fit = fit(thicknesses.', hit_counts.', 'exp1');
+detector_area = pi * 0.0254^2; % as measured in the lab
 
-detector_area = 0.0254^2; % as measured in the lab
+flux_fit = fit(thicknesses.', (hit_counts / detector_area).', 'exp1')
 
-density  = flux_fit(0) / detector_area;
+density  = flux_fit(0);
 
 if draw_figure
     figure;
@@ -51,7 +53,7 @@ if draw_figure
     
     xlim([-2 30] ./ 100);
     plot(flux_fit);
-    plot(thicknesses, hit_counts, '.');
+    plot(thicknesses, hit_counts / detector_area, '.');
     plot(0, density, 'o');
 end
 

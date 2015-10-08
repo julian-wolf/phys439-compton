@@ -1,16 +1,13 @@
 function [fit_to_data] = freq_shift ...
-    (material, draw_final, draw_intermediate)
+    (material, draw_figure)
 % material can be 'BR' for brass or 'Cu' for copper
-if nargin < 3
-    draw_intermediate = false;
-    if nargin < 2
-        draw_final = false;
-        if nargin < 1
-            material = ''; % default to Al, which has no label!
-        end
+if nargin < 2
+    draw_figure = false;
+    if nargin < 1
+        material = ''; % default to Al, which has no label!
     end
 end
-if nargin >= 1
+if nargin >= 1 && material ~= ''
     material = [material '_'];
 end
 
@@ -69,19 +66,11 @@ section_starts = [460 440 420 400 380 360 340 320];
 energies    = zeros(size(angles));
 frac_errors = zeros(size(angles));
 
+figure; hold on
 for i = 1:numel(angles)
     f = fit([section_starts(i):1024].', ...
             spectra_shift_fg_data(section_starts(i):1024, i), ...
             'gauss1');
-    
-    if draw_intermediate
-        figure;
-        hold on
-        
-        plot(1:1024, spectra_shift_fg_data(:, i));
-        plot(f);
-    end
-    
     
     confidences       = confint(f);
     energy_confidence = (confidences(2, 2) - confidences(1, 2)) / 2;
@@ -93,7 +82,7 @@ end
 
 fit_to_data = fitlm((1 - cos(angles_true)).', (1000 ./ (energies)).');
 
-if draw_final
+if draw_figure
     figure;
     hold on
 
